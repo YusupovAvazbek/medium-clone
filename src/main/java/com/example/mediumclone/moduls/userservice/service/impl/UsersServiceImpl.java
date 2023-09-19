@@ -1,6 +1,9 @@
 package com.example.mediumclone.moduls.userservice.service.impl;
 
+import com.example.mediumclone.aop.CurrentUser;
+import com.example.mediumclone.baseDto.LoginDto;
 import com.example.mediumclone.baseDto.ResponseDto;
+import com.example.mediumclone.baseDto.TokenDto;
 import com.example.mediumclone.entity.models.User;
 import com.example.mediumclone.message.AppStatusCodes;
 import com.example.mediumclone.message.AppStatusMessages;
@@ -8,24 +11,30 @@ import com.example.mediumclone.moduls.userservice.dto.UsersDto;
 import com.example.mediumclone.moduls.userservice.mapper.UserMapper;
 import com.example.mediumclone.moduls.userservice.repository.UsersRepository;
 import com.example.mediumclone.moduls.userservice.service.UsersService;
+import com.example.mediumclone.security.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static com.example.mediumclone.message.AppStatusCodes.DATABASE_ERROR_CODE;
-import static com.example.mediumclone.message.AppStatusCodes.NOT_FOUND_ERROR_CODE;
+import static com.example.mediumclone.message.AppStatusCodes.*;
 import static com.example.mediumclone.message.AppStatusMessages.*;
 
 
 @RequiredArgsConstructor
 @Service
-public class UsersServiceImpl implements UsersService {
+public class UsersServiceImpl implements UsersService, UserDetailsService {
     private final UserMapper usersMapper;
     private final UsersRepository usersRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
     @Override
-    public ResponseDto<UsersDto> create(UsersDto usersDto) {
+    public ResponseDto<UsersDto> create(UsersDto currentUser,UsersDto usersDto) {
         try {
             Optional<User> byEmail = usersRepository.findByEmail(usersDto.getEmail());
             Optional<User> byUsername = usersRepository.findByUsername(usersDto.getUsername());
@@ -62,7 +71,7 @@ public class UsersServiceImpl implements UsersService {
 
 
     @Override
-    public ResponseDto<Void> delete(Long id) {
+    public ResponseDto<Void> delete(UsersDto currentUser, Long id) {
         try {
             Optional<User> byId = usersRepository.findById(id);
             if (byId.isPresent()) {
@@ -85,11 +94,11 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
-    public ResponseDto<UsersDto> update(UsersDto usersDto) {
+    public ResponseDto<UsersDto> update(@CurrentUser UsersDto currentUser,UsersDto usersDto) {
         if (usersDto.getId() == null) {
             return ResponseDto.<UsersDto>builder()
                     .message(AppStatusMessages.NULL_VALUE)
-                    .code(AppStatusCodes.VALIDATION_ERROR_CODE)
+                    .code(VALIDATION_ERROR_CODE)
                     .build();
         }
         try {
@@ -104,7 +113,7 @@ public class UsersServiceImpl implements UsersService {
                 Optional<User> byEmail = usersRepository.findByEmail(usersDto.getEmail());
                 if (byEmail.isPresent() && !userOptional.get().getEmail().equals(usersDto.getEmail()))
                     return ResponseDto.<UsersDto>builder()
-                            .code(AppStatusCodes.VALIDATION_ERROR_CODE)
+                            .code(VALIDATION_ERROR_CODE)
                             .message(usersDto.getEmail() + AppStatusMessages.ALREADY_EXISTS)
                             .build();
             }
@@ -112,7 +121,7 @@ public class UsersServiceImpl implements UsersService {
                 Optional<User> byUsername = usersRepository.findByUsername(usersDto.getUsername());
                 if (byUsername.isPresent() && !userOptional.get().getUsername().equals(usersDto.getUsername()))
                     return ResponseDto.<UsersDto>builder()
-                            .code(AppStatusCodes.VALIDATION_ERROR_CODE)
+                            .code(VALIDATION_ERROR_CODE)
                             .message(usersDto.getUsername() + AppStatusMessages.ALREADY_EXISTS)
                             .build();
             }
@@ -138,7 +147,7 @@ public class UsersServiceImpl implements UsersService {
 
 
     @Override
-    public ResponseDto<UsersDto> get(Long id) {
+    public ResponseDto<UsersDto> get(UsersDto usersDto,Long id) {
         try {
             Optional<User> byId = usersRepository.findById(id);
             if (byId.isEmpty()) {
@@ -167,4 +176,28 @@ public class UsersServiceImpl implements UsersService {
         return user;
     }
 
+    @Override
+    public UsersDto loadUserByUsername(String username) throws UsernameNotFoundException {
+        Optional<User> users = usersRepository.findFirstByUsername(username);
+        if(users.isEmpty()) throw new UsernameNotFoundException("user is not found");
+
+        return usersMapper.toDto(users.get());
+    }
+    public ResponseDto<TokenDto> signIn(LoginDto loginDto) {
+        UsersDto users = loadUserByUsername(loginDto.getUsername());
+        if(!passwordEncoder.matches(loginDto.getPassword(), users.getPassword())){
+            return ResponseDto.<TokenDto>builder()
+                    .message("Password is not correct")
+                    .code(VALIDATION_ERROR_CODE)
+                    .build();
+        }
+        TokenDto tokenDto = new TokenDto();
+        //jwtService.generateToken();
+        return ResponseDto.<TokenDto>builder()
+                .code(OK_CODE)
+                .message(OK)
+                .data(tokenDto)
+                .success(true)
+                .build();
+    }
 }

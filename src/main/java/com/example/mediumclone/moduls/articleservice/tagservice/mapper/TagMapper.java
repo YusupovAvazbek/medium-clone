@@ -10,10 +10,10 @@ import java.util.stream.Collectors;
 @Component
 //@Mapper(componentModel = "spring")
 public class TagMapper {
-    Set<String> toDto(Set<Tag> tags){
+    public Set<String> toDto(Set<Tag> tags){
         return tags.stream().map(tag -> tag.getName()).collect(Collectors.toSet());
     }
-    Set<Tag> toEntity(Set<String> stringTag){
+    public Set<Tag> toEntity(Set<String> stringTag){
         return stringTag.stream().map(st->new Tag(st)).collect(Collectors.toSet());
     }
 }

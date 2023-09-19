@@ -23,7 +23,6 @@ public class User extends Auditable {
     private String password;
     private String email;
     private String bio;
-    @Column(columnDefinition = "TEXT default('USER')")
     private String role;
     @ManyToMany
     @JoinTable(

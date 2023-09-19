@@ -11,11 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class ArticleMapper {
     @Autowired
     protected TagMapper tagMapper;
-    @Mapping(target = "likes",expression = "java((articles.getLikes() == null) ? 0 : articles.getLikes().size())")
-    @Mapping(target = "tags", expression = "java(tagMapper.toDto(articles.getTags()))")
+    @Mapping(target = "likes",expression = "java((article.getLikes() == null) ? 0 : article.getLikes().size())")
+    @Mapping(target = "tags", expression = "java(tagMapper.toDto(article.getTags()))")
     public abstract ArticleDto toDto(Article article);
     @Mapping(target = "likes",ignore = true)
-    @Mapping(target = "tags", expression = "java(tagMapper.toEntity(articlesDto.getTags()))")
+    @Mapping(target = "tags", expression = "java(tagMapper.toEntity(articleDto.getTags()))")
     public abstract Article toEntity(ArticleDto articleDto);
 
 }

@@ -9,14 +9,14 @@ import org.springframework.stereotype.Service;
 public interface UsersService extends CRUDService<UsersDto, Long> {
 
     @Override
-    ResponseDto<UsersDto> create(UsersDto dto);
+    ResponseDto<UsersDto> create(UsersDto currentUser,UsersDto dto);
 
     @Override
-    ResponseDto<Void> delete(Long id);
+    ResponseDto<Void> delete(UsersDto currentUser,Long id);
 
     @Override
-    ResponseDto<UsersDto> update(UsersDto dto);
+    ResponseDto<UsersDto> update(UsersDto currentUser,UsersDto dto);
 
     @Override
-    ResponseDto<UsersDto> get(Long id);
+    ResponseDto<UsersDto> get(UsersDto currentUser,Long id);
 }

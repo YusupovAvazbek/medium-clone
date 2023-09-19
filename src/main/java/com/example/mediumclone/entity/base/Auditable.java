@@ -22,16 +22,16 @@ public class Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
-    @Column(name = "is_blocked", columnDefinition = "BOOLEAN default false")
+    @Column(name = "is_blocked")
     private boolean blocked;
 
-    @Column(name = "is_active", columnDefinition = "int default 1")
+    @Column(name = "is_active")
     private short active;
     @CreatedDate
     @CreationTimestamp
-    @Column(name = "created_at", columnDefinition = "timestamp default now()")
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
     @LastModifiedDate
-    @Column(name = "updated_at", columnDefinition = "timestamp default now()")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }

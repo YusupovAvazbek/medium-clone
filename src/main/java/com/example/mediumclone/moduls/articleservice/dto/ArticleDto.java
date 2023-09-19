@@ -14,7 +14,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ArticleDto extends BaseDto {
-    private Integer id;
+    private Long id;
     private String title;
     private String about;
     private String body;
